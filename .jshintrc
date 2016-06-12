@@ -1,0 +1,21 @@
+{
+    "bitwise": true,
+    "browser": true,
+    "eqeqeq": true,
+    "es5": true,
+    "esnext": true,
+    "forin": true,
+    "freeze": true,
+    "futurehostile": true,
+    "latedef": "nofunc",
+    "loopfunc": true,
+    "noarg": true,
+    "nocomma": true,
+    "nonbsp": true,
+    "singleGroups": true,
+    "strict": "implied",
+    "undef": true,
+    "unused": true,
+    "varstmt": true,
+    "globals": {}
+}

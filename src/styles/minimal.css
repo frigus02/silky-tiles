@@ -1,0 +1,15 @@
+.at-container {
+    position: relative;
+}
+
+.at-tile {
+    position: absolute;
+    cursor: move;
+    transition: transform 0.2s ease;
+}
+
+.at-tile.at-is-dragging {
+    transition: none;
+    will-change: transform;
+    z-index: 1;
+}
