@@ -36,13 +36,21 @@ export default class DragHandler {
     }
 
     _initEventListeners (tile) {
-        tile.addEventListener('touchstart', this._onDragStart);
-        tile.addEventListener('mousedown', this._onDragStart);
+        if (window.PointerEvent) {
+            tile.addEventListener('pointerdown', this._onDragStart);
+        } else {
+            tile.addEventListener('touchstart', this._onDragStart);
+            tile.addEventListener('mousedown', this._onDragStart);
+        }
     }
 
     _destroyEventListeners (tile) {
-        tile.removeEventListener('touchstart', this._onDragStart);
-        tile.removeEventListener('mousedown', this._onDragStart);
+        if (window.PointerEvent) {
+            tile.removeEventListener('pointerdown', this._onDragStart);
+        } else {
+            tile.removeEventListener('touchstart', this._onDragStart);
+            tile.removeEventListener('mousedown', this._onDragStart);
+        }
     }
 
     _onDragStart (evt) {
@@ -61,10 +69,18 @@ export default class DragHandler {
 
         this._tile.classList.add('at-is-dragging');
 
-        document.addEventListener('touchmove', this._onDragMove);
-        document.addEventListener('touchend', this._onDragEnd);
-        document.addEventListener('mousemove', this._onDragMove);
-        document.addEventListener('mouseup', this._onDragEnd);
+        if (window.PointerEvent) {
+            this._tile.addEventListener('pointermove', this._onDragMove);
+            this._tile.addEventListener('pointerup', this._onDragEnd);
+            this._tile.addEventListener('pointercancel', this._onDragEnd);
+
+            this._tile.setPointerCapture(evt.pointerId);
+        } else {
+            document.addEventListener('touchmove', this._onDragMove);
+            document.addEventListener('touchend', this._onDragEnd);
+            document.addEventListener('mousemove', this._onDragMove);
+            document.addEventListener('mouseup', this._onDragEnd);
+        }
 
         this.dispatchEvent('dragstart', this._tile);
     }
@@ -79,10 +95,16 @@ export default class DragHandler {
     _onDragEnd () {
         if (!this._tile) return;
 
-        document.removeEventListener('touchmove', this._onDragMove);
-        document.removeEventListener('touchend', this._onDragEnd);
-        document.removeEventListener('mousemove', this._onDragMove);
-        document.removeEventListener('mouseup', this._onDragEnd);
+        if (window.PointerEvent) {
+            this._tile.removeEventListener('pointermove', this._onDragMove);
+            this._tile.removeEventListener('pointerup', this._onDragEnd);
+            this._tile.removeEventListener('pointercancel', this._onDragEnd);
+        } else {
+            document.removeEventListener('touchmove', this._onDragMove);
+            document.removeEventListener('touchend', this._onDragEnd);
+            document.removeEventListener('mousemove', this._onDragMove);
+            document.removeEventListener('mouseup', this._onDragEnd);
+        }
 
         this._tile.classList.remove('at-is-dragging');
 
