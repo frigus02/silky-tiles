@@ -14,7 +14,7 @@
 
         tiles.forEach(function (tile) {
             let tileEl = containerEl.appendChild(document.createElement('div'));
-            tileEl.className = 'tile at-tile';
+            tileEl.className = 'tile st-tile';
 
             let tileIconEl = tileEl.appendChild(document.createElement('div'));
             tileIconEl.className = 'tile__icon material-icons';

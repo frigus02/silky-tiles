@@ -67,7 +67,7 @@ export default class DragHandler {
         this._startX = this._currentX - currentPosition.x;
         this._startY = this._currentY - currentPosition.y;
 
-        this._tile.classList.add('at-is-dragging');
+        this._tile.classList.add('st-is-dragging');
 
         if (window.PointerEvent) {
             this._tile.addEventListener('pointermove', this._onDragMove);
@@ -106,7 +106,7 @@ export default class DragHandler {
             document.removeEventListener('mouseup', this._onDragEnd);
         }
 
-        this._tile.classList.remove('at-is-dragging');
+        this._tile.classList.remove('st-is-dragging');
 
         this.dispatchEvent('dragend', this._tile);
 
