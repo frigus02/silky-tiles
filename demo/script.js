@@ -28,7 +28,7 @@
 
     generateTiles(container);
 
-    const adapter = new SilkyTiles.adapters.SimpleFlowAdapter(container);
+    const adapter = new SilkyTiles.adapters.FlowAdapter(container);
     const layout = new SilkyTiles.layouts.FlowLayout();
     const silkyTiles = new SilkyTiles.SilkyTiles();
 

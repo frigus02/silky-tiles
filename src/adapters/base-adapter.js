@@ -1,7 +1,7 @@
 import Listenable from '../helpers/listenable';
 import {mix} from '../helpers/utils';
 
-export default class SimpleAdapter {
+export default class BaseAdapter {
     constructor (containerElement) {
         Listenable.call(this, ['tileadded', 'tilechanged', 'tileremoved']);
 
@@ -74,6 +74,12 @@ export default class SimpleAdapter {
             y: bounds.top - containerBounds.top
         };
     }
+
+    getTileLayoutParams (/*tile*/) {
+    }
+
+    onTileMoved (/*tile, targetTile*/) {
+    }
 }
 
-mix(SimpleAdapter, Listenable);
+mix(BaseAdapter, Listenable);

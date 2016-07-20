@@ -1,12 +1,12 @@
 import Listenable from './listenable';
 import {getTouchCoordinate, mix} from './utils';
 
-
 export default class DragHandler {
     constructor (silkyTiles) {
         Listenable.call(this, ['dragstart', 'dragend']);
 
         this._silkyTiles = silkyTiles;
+        this._adapter = null;
         this._tile = null;
         this._startX = 0;
         this._startY = 0;

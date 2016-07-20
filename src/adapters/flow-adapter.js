@@ -1,10 +1,16 @@
-import SimpleAdapter from './simple-adapter';
+import BaseAdapter from './base-adapter';
 
-export default class SimpleFlowAdapter extends SimpleAdapter {
+export default class FlowAdapter extends BaseAdapter {
     constructor (containerElement, moveMode) {
         super(containerElement);
 
         this._moveMode = moveMode;
+    }
+
+    getTileLayoutParams (tile) {
+        return {
+            position: this._tiles.indexOf(tile)
+        };
     }
 
     onTileMoved (tile, targetTile) {
@@ -27,11 +33,5 @@ export default class SimpleFlowAdapter extends SimpleAdapter {
                 this.dispatchEvent('tilechanged', this._tiles[i]);
             }
         }
-    }
-
-    getTileLayoutParams (tile) {
-        return {
-            position: this._tiles.indexOf(tile)
-        };
     }
 }

@@ -2,30 +2,29 @@ import './styles/minimal.css';
 import DragHandler from './helpers/drag-handler';
 import ColumnLayout from './layouts/column-layout';
 import FlowLayout from './layouts/flow-layout';
-import SimpleAdapter from './adapters/simple-adapter';
-import SimpleFlowAdapter from './adapters/simple-flow-adapter';
+import BaseAdapter from './adapters/base-adapter';
+import FlowAdapter from './adapters/flow-adapter';
 
 export class SilkyTiles {
     constructor () {
         this._adapter = null;
         this._layout = null;
-        this._layoutQueue = [];
         this._layoutWidth = 0;
         this._layoutHeight = 0;
-        this._layoutPositions = new WeakMap();
         this._dragHandler = new DragHandler(this);
         this._draggingTile = null;
 
         this._onTileAdded = this._onTileAdded.bind(this);
         this._onTileChanged = this._onTileChanged.bind(this);
+        this._onTileRemoved = this._onTileRemoved.bind(this);
         this._onTileDragStart = this._onTileDragStart.bind(this);
         this._onTileDragEnd = this._onTileDragEnd.bind(this);
-        this.update = this.update.bind(this);
+        this._update = this._update.bind(this);
 
         this._dragHandler.addEventListener('dragstart', this._onTileDragStart);
         this._dragHandler.addEventListener('dragend', this._onTileDragEnd);
 
-        requestAnimationFrame(this.update);
+        requestAnimationFrame(this._update);
     }
 
     get adapter () {
@@ -36,13 +35,15 @@ export class SilkyTiles {
         if (this._adapter) {
             this._adapter.removeEventListener('tileadded', this._onTileAdded);
             this._adapter.removeEventListener('tilechanged', this._onTileChanged);
+            this._adapter.removeEventListener('tileremoved', this._onTileRemoved);
+            this._adapter.tiles.forEach(this._onTileRemoved);
         }
 
         this._adapter = adapter;
-
-        this._layoutQueue = Array.from(this._adapter.tiles);
+        this._adapter.tiles.forEach(this._onTileAdded);
         this._adapter.addEventListener('tileadded', this._onTileAdded);
         this._adapter.addEventListener('tilechanged', this._onTileChanged);
+        this._adapter.addEventListener('tileremoved', this._onTileRemoved);
 
         this._dragHandler.adapter = this._adapter;
     }
@@ -52,15 +53,32 @@ export class SilkyTiles {
     }
 
     set layout (layout) {
+        if (this._layout && this._adapter) {
+            this._adapter.tiles.forEach(this._onTileRemoved);
+        }
+
         this._layout = layout;
+        if (this._adapter) {
+            this._adapter.tiles.forEach(this._onTileAdded);
+        }
     }
 
     _onTileAdded (tile) {
-        this._layoutQueue.push(tile);
+        if (this._layout) {
+            this._layout.onTileAdded(tile);
+        }
     }
 
     _onTileChanged (tile) {
-        this._layoutQueue.push(tile);
+        if (this._layout) {
+            this._layout.onTileChanged(tile);
+        }
+    }
+
+    _onTileRemoved (tile) {
+        if (this._layout) {
+            this._layout.onTileRemoved(tile);
+        }
     }
 
     _onTileDragStart (tile) {
@@ -69,46 +87,32 @@ export class SilkyTiles {
 
     _onTileDragEnd (tile) {
         this._draggingTile = null;
-        this._layoutQueue.push(tile);
+        this._onTileChanged(tile);
     }
 
-    getTilePosition (tile) {
-        return this._layoutPositions.get(tile);
-    }
-
-    update () {
+    _update () {
         if (!this._adapter || !this._layout) return;
 
         // Get layout from drag handler first, because it might add
         // additional tiles to the queue.
         let draggingTilePosition;
         if (this._draggingTile) {
-            this._layoutQueue.push(this._draggingTile);
+            this._layout.onTileChanged(this._draggingTile);
             draggingTilePosition = this._dragHandler.layout();
         }
-
-        // Get layout queue.
-        let layoutQueue = this._layoutQueue;
-        this._layoutQueue = [];
 
         // If the container width changed, we need to layout all tiles.
         if (this._layoutWidth !== this._adapter.container.clientWidth) {
             this._layoutWidth = this._adapter.container.clientWidth;
             this._layout.onWidthChanged(this._layoutWidth);
-            layoutQueue = this._adapter.tiles;
         }
 
-        // Measure all tiles in queue.
-        for (let tile of layoutQueue) {
-            const layoutParams = this._adapter.getTileLayoutParams(tile);
-            const position = this._layout.layout(layoutParams);
-
-            this._layoutPositions.set(tile, position);
-        }
+        // Get layout queue.
+        const changedTiles = this._layout.layout((tile) => this._adapter.getTileLayoutParams(tile));
 
         // Layout all tiles in queue.
-        for (let tile of layoutQueue) {
-            const position = this._layoutPositions.get(tile);
+        for (let tile of changedTiles) {
+            const position = this._layout.getTilePosition(tile);
             if (tile === this._draggingTile) {
                 Object.assign(position, draggingTilePosition);
             }
@@ -124,7 +128,11 @@ export class SilkyTiles {
             this._adapter.container.style.height = `${this._layoutHeight}px`;
         }
 
-        requestAnimationFrame(this.update);
+        requestAnimationFrame(this._update);
+    }
+
+    getTilePosition (tile) {
+        return this._layout && this._layout.getTilePosition(tile);
     }
 }
 
@@ -134,6 +142,6 @@ export const layouts = {
 };
 
 export const adapters = {
-    SimpleAdapter,
-    SimpleFlowAdapter
+    BaseAdapter,
+    FlowAdapter
 };
