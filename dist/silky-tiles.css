@@ -1,0 +1,21 @@
+.st-container {
+    position: relative;
+}
+
+.st-tile {
+    position: absolute;
+    cursor: move;
+    transition: transform 0.2s ease;
+
+    /*
+    * Disable default touch handling.
+    * https://msdn.microsoft.com/en-us/library/dn433244(v=vs.85).aspx
+    */
+    touch-action: none;
+}
+
+.st-tile.st-is-dragging {
+    transition: none;
+    will-change: transform;
+    z-index: 1;
+}

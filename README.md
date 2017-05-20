@@ -13,6 +13,6 @@ Under development. Not yet ready for use.
 * Assign all necessary classes automatically
 * Webpack configuration for production build (minified files, ...)
 * Changelog
-* Frist version
+* First version
 
 * Nested layouts (make layout, which allows to specify nested layouts)
