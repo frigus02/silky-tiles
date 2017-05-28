@@ -1,12 +1,13 @@
 import './styles/minimal.css';
 import DragHandler from './helpers/drag-handler';
+import BaseLayout from './layouts/base-layout';
 import ColumnLayout from './layouts/column-layout';
 import FlowLayout from './layouts/flow-layout';
 import BaseAdapter from './adapters/base-adapter';
-import FlowAdapter from './adapters/flow-adapter';
+import DomAdapter from './adapters/dom-adapter';
 
 export class SilkyTiles {
-    constructor () {
+    constructor() {
         this._adapter = null;
         this._layout = null;
         this._layoutWidth = 0;
@@ -19,19 +20,21 @@ export class SilkyTiles {
         this._onTileRemoved = this._onTileRemoved.bind(this);
         this._onTileDragStart = this._onTileDragStart.bind(this);
         this._onTileDragEnd = this._onTileDragEnd.bind(this);
+        this._onTileMoved = this._onTileMoved.bind(this);
         this._update = this._update.bind(this);
 
         this._dragHandler.addEventListener('dragstart', this._onTileDragStart);
         this._dragHandler.addEventListener('dragend', this._onTileDragEnd);
+        this._dragHandler.addEventListener('tilemoved', this._onTileMoved);
 
         requestAnimationFrame(this._update);
     }
 
-    get adapter () {
+    get adapter() {
         return this._adapter;
     }
 
-    set adapter (adapter) {
+    set adapter(adapter) {
         if (this._adapter) {
             this._adapter.removeEventListener('tileadded', this._onTileAdded);
             this._adapter.removeEventListener('tilechanged', this._onTileChanged);
@@ -48,11 +51,11 @@ export class SilkyTiles {
         this._dragHandler.adapter = this._adapter;
     }
 
-    get layout () {
+    get layout() {
         return this._layout;
     }
 
-    set layout (layout) {
+    set layout(layout) {
         if (this._layout && this._adapter) {
             this._adapter.tiles.forEach(this._onTileRemoved);
         }
@@ -63,42 +66,53 @@ export class SilkyTiles {
         }
     }
 
-    _onTileAdded (tile) {
+    _onTileAdded(tile) {
         if (this._layout) {
             this._layout.onTileAdded(tile);
         }
     }
 
-    _onTileChanged (tile) {
+    _onTileChanged(tile) {
         if (this._layout) {
             this._layout.onTileChanged(tile);
         }
     }
 
-    _onTileRemoved (tile) {
+    _onTileRemoved(tile) {
         if (this._layout) {
             this._layout.onTileRemoved(tile);
         }
     }
 
-    _onTileDragStart (tile) {
+    _onTileDragStart(tile) {
         this._draggingTile = tile;
     }
 
-    _onTileDragEnd (tile) {
+    _onTileDragEnd(tile) {
         this._draggingTile = null;
         this._onTileChanged(tile);
     }
 
-    _update () {
+    _onTileMoved(tile, targetTile) {
+        if (this._layout) {
+            const newPositions = this._layout.onTileMoved(tile, targetTile, tile => this._adapter.getTileLayoutParams(tile));
+            for (const pos of newPositions) {
+                this._adapter.onTilePositionChanged(pos.tile, pos.newPosition);
+            }
+        }
+    }
+
+    _update() {
         if (!this._adapter || !this._layout) return;
+
+        const changedTiles = [];
 
         // Get layout from drag handler first, because it might add
         // additional tiles to the queue.
         let draggingTilePosition;
         if (this._draggingTile) {
-            this._layout.onTileChanged(this._draggingTile);
             draggingTilePosition = this._dragHandler.layout();
+            changedTiles.push(this._draggingTile);
         }
 
         // If the container width changed, we need to layout all tiles.
@@ -108,7 +122,7 @@ export class SilkyTiles {
         }
 
         // Get layout queue.
-        const changedTiles = this._layout.layout((tile) => this._adapter.getTileLayoutParams(tile));
+        changedTiles.push(...this._layout.layout(tile => this._adapter.getTileLayoutParams(tile)));
 
         // Layout all tiles in queue.
         for (let tile of changedTiles) {
@@ -131,17 +145,18 @@ export class SilkyTiles {
         requestAnimationFrame(this._update);
     }
 
-    getTilePosition (tile) {
+    getTilePosition(tile) {
         return this._layout && this._layout.getTilePosition(tile);
     }
 }
 
 export const layouts = {
+    BaseLayout,
     ColumnLayout,
     FlowLayout
 };
 
 export const adapters = {
     BaseAdapter,
-    FlowAdapter
+    DomAdapter
 };

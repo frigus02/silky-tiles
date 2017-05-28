@@ -2,6 +2,10 @@
 
     const container = document.querySelector('.tiles-container');
 
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
     function generateTiles(containerEl) {
         const tiles = [
             'home', 'alarm', 'assignment', 'bookmark', 'done',
@@ -12,9 +16,12 @@
             'nfc', 'usb', 'storage', 'attachment', 'cloud_queue'
         ];
 
-        tiles.forEach(function (tile) {
+        tiles.forEach((tile, index) => {
             let tileEl = containerEl.appendChild(document.createElement('div'));
-            tileEl.className = 'tile st-tile';
+            tileEl.className = 'tile';
+            tileEl.dataset.tilePosition = index + 1;
+            tileEl.dataset.tileWidth = randInt(1, 3);
+            tileEl.dataset.tileHeight = randInt(1, 3);
 
             let tileIconEl = tileEl.appendChild(document.createElement('div'));
             tileIconEl.className = 'tile__icon material-icons';
@@ -28,8 +35,14 @@
 
     generateTiles(container);
 
-    const adapter = new SilkyTiles.adapters.FlowAdapter(container);
-    const layout = new SilkyTiles.layouts.FlowLayout();
+    const adapter = new SilkyTiles.adapters.DomAdapter(container);
+    const layout = new SilkyTiles.layouts.FlowLayout({
+        tileWidth: 96,
+        tileHeight: 96,
+        margin: 8,
+        outerMargin: true,
+        moveMode: 'push' // switch || push
+    });
     const silkyTiles = new SilkyTiles.SilkyTiles();
 
     silkyTiles.adapter = adapter;

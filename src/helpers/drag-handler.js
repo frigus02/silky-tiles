@@ -1,9 +1,12 @@
-import Listenable from './listenable';
-import {getTouchCoordinate, mix} from './utils';
+import ListenableMixin from './listenable-mixin';
+import {getTouchCoordinate} from './utils';
 
-export default class DragHandler {
-    constructor (silkyTiles) {
-        Listenable.call(this, ['dragstart', 'dragend']);
+/**
+ * Supported events: dragstart, dragend, tilemoved
+ */
+export default class DragHandler extends ListenableMixin() {
+    constructor(silkyTiles) {
+        super();
 
         this._silkyTiles = silkyTiles;
         this._adapter = null;
@@ -20,11 +23,11 @@ export default class DragHandler {
         this._onDragEnd = this._onDragEnd.bind(this);
     }
 
-    get adapter () {
+    get adapter() {
         return this._adapter;
     }
 
-    set adapter (adapter) {
+    set adapter(adapter) {
         if (this._adapter) {
             this._adapter.removeEventListener('tileadded', this._initEventListeners);
             this._adapter.tiles.forEach(this._destroyEventListeners);
@@ -35,7 +38,7 @@ export default class DragHandler {
         this._adapter.addEventListener('tileadded', this._initEventListeners);
     }
 
-    _initEventListeners (tile) {
+    _initEventListeners(tile) {
         if (window.PointerEvent) {
             tile.addEventListener('pointerdown', this._onDragStart);
         } else {
@@ -44,7 +47,7 @@ export default class DragHandler {
         }
     }
 
-    _destroyEventListeners (tile) {
+    _destroyEventListeners(tile) {
         if (window.PointerEvent) {
             tile.removeEventListener('pointerdown', this._onDragStart);
         } else {
@@ -53,7 +56,7 @@ export default class DragHandler {
         }
     }
 
-    _onDragStart (evt) {
+    _onDragStart(evt) {
         if (this._tile) return;
 
         evt.preventDefault();
@@ -85,14 +88,14 @@ export default class DragHandler {
         this.dispatchEvent('dragstart', this._tile);
     }
 
-    _onDragMove (evt) {
+    _onDragMove(evt) {
         if (!this._tile) return;
 
         this._currentX = getTouchCoordinate(evt, 'pageX');
         this._currentY = getTouchCoordinate(evt, 'pageY');
     }
 
-    _onDragEnd () {
+    _onDragEnd() {
         if (!this._tile) return;
 
         if (window.PointerEvent) {
@@ -113,7 +116,7 @@ export default class DragHandler {
         this._tile = null;
     }
 
-    _getTileAtPosition (x, y) {
+    _getTileAtPosition(x, y) {
         for (let tile of this._adapter.tiles) {
             const position = this._silkyTiles.getTilePosition(tile);
 
@@ -125,7 +128,7 @@ export default class DragHandler {
         }
     }
 
-    layout () {
+    layout() {
         if (!this._tile) return;
 
         const containerBounds = this._adapter.getContainerBounds();
@@ -134,7 +137,7 @@ export default class DragHandler {
             this._currentY - containerBounds.absoluteTop);
 
         if (targetTile) {
-            this._adapter.onTileMoved(this._tile, targetTile);
+            this.dispatchEvent('tilemoved', this._tile, targetTile);
         }
 
         return {
@@ -143,5 +146,3 @@ export default class DragHandler {
         };
     }
 }
-
-mix(DragHandler, Listenable);

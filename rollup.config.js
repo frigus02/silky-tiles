@@ -7,7 +7,7 @@ export default {
     moduleName: 'SilkyTiles',
     plugins: [
         css({ output: 'dist/silky-tiles.css' }),
-        babel()
+        //babel()
     ],
     dest: 'dist/silky-tiles.js',
     sourceMap: true
