@@ -1,10 +1,10 @@
-import ListenableMixin from './listenable-mixin';
+import Listenable from './listenable';
 import {getTouchCoordinate} from './utils';
 
 /**
  * Supported events: dragstart, dragend, tilemoved
  */
-export default class DragHandler extends ListenableMixin() {
+export default class DragHandler extends Listenable {
     constructor(silkyTiles) {
         super();
 

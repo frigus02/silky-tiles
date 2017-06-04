@@ -1,9 +1,9 @@
-import ListenableMixin from '../helpers/listenable-mixin';
+import Listenable from '../helpers/listenable';
 
 /**
  * Supported events: tileadded, tilechanged, tileremoved
  */
-export default class BaseAdapter extends ListenableMixin() {
+export default class BaseAdapter extends Listenable {
     constructor() {
         super();
     }

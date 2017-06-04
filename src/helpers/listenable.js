@@ -1,6 +1,5 @@
-const ListenableMixin = (superclass = Object) => class extends superclass {
+class Listenable {
     constructor() {
-        super();
         this._listeners = {};
     }
 
@@ -30,6 +29,6 @@ const ListenableMixin = (superclass = Object) => class extends superclass {
 
         return this._listeners[eventName];
     }
-};
+}
 
-export default ListenableMixin;
+export default Listenable;
